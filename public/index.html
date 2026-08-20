@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rate Buddy — Shipping Quotes for Small Shippers</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">📦 Rate Buddy</div>
+    <div class="tagline">Shipping estimates &amp; plain-English answers for small shippers</div>
+  </header>
+
+  <main class="layout">
+    <section class="panel quote-panel">
+      <h2>Get a quote</h2>
+      <p class="hint">No API key needed — this runs on a local rate &amp; rules model, not a live LLM call.</p>
+
+      <form id="quote-form">
+        <div class="grid-2">
+          <label>Origin ZIP
+            <input type="text" name="originZip" required pattern="\d{5}" maxlength="5" placeholder="10001" />
+          </label>
+          <label>Destination ZIP
+            <input type="text" name="destZip" required pattern="\d{5}" maxlength="5" placeholder="90210" />
+          </label>
+        </div>
+
+        <label>Weight (lb)
+          <input type="number" name="weightLb" min="0.1" step="0.1" required placeholder="4.5" />
+        </label>
+
+        <div class="grid-3">
+          <label>Length (in)
+            <input type="number" name="lengthIn" min="0" step="0.1" placeholder="12" />
+          </label>
+          <label>Width (in)
+            <input type="number" name="widthIn" min="0" step="0.1" placeholder="10" />
+          </label>
+          <label>Height (in)
+            <input type="number" name="heightIn" min="0" step="0.1" placeholder="8" />
+          </label>
+        </div>
+
+        <label>Ship date
+          <input type="date" name="shipDate" />
+        </label>
+
+        <label>Service
+          <select name="serviceId" id="service-select">
+            <option value="">Compare all services</option>
+          </select>
+        </label>
+
+        <fieldset class="checks">
+          <label><input type="checkbox" name="residential" /> Residential address</label>
+          <label><input type="checkbox" name="signatureRequired" /> Signature required</label>
+          <label><input type="checkbox" name="saturdayDelivery" /> Saturday delivery</label>
+        </fieldset>
+
+        <button type="submit">Get quote</button>
+      </form>
+
+      <div id="quote-results" class="results" aria-live="polite"></div>
+    </section>
+
+    <section class="panel chat-panel">
+      <h2>Ask Rate Buddy</h2>
+      <p class="hint">"How much extra for Saturday delivery?" · "Why would DIM weight hit me?" · "What's the cheapest way to ship a 20lb box to 90210?"</p>
+
+      <div id="chat-log" class="chat-log" aria-live="polite">
+        <div class="msg assistant">
+          Hi! I'm Rate Buddy. Give me package details (origin, destination, weight, dimensions) and I'll quote it, compare carriers, or explain any surcharge. What are you shipping?
+        </div>
+      </div>
+
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" placeholder="Ask a question…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+      <p id="chat-status" class="hint"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Prototype for a class assignment. Rates are an illustrative estimate model, not live UPS/FedEx pricing — see
+    <a href="/docs/business-plan.md" target="_blank" rel="noopener">the business plan</a> for details and disclaimers.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

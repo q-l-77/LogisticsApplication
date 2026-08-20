@@ -1,0 +1,125 @@
+{
+  "_comment": "Illustrative rate model for demo/prototype purposes only. Numbers are calibrated to be roughly the right order of magnitude for published (non-negotiated) list rates as of 2026 — they are NOT live carrier data and must not be used for real purchasing decisions. baseFee/perLb apply to a Zone 2, 1 lb shipment; zoneFactors scale that up by distance band.",
+  "fuelSurchargePct": 0.165,
+  "zoneFactors": {
+    "2": 1.0,
+    "3": 1.15,
+    "4": 1.35,
+    "5": 1.55,
+    "6": 1.8,
+    "7": 2.05,
+    "8": 2.35
+  },
+  "services": {
+    "ups_ground": {
+      "carrier": "UPS",
+      "label": "UPS Ground",
+      "transit": "1-5 business days",
+      "baseFee": 9.5,
+      "perLb": 0.85,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "ups_3day_select": {
+      "carrier": "UPS",
+      "label": "UPS 3 Day Select",
+      "transit": "3 business days",
+      "baseFee": 18.0,
+      "perLb": 1.05,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "ups_2nd_day_air": {
+      "carrier": "UPS",
+      "label": "UPS 2nd Day Air",
+      "transit": "2 business days",
+      "baseFee": 28.0,
+      "perLb": 1.6,
+      "saturdayEligible": true,
+      "saturdayFee": 16.5,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "ups_next_day_air_saver": {
+      "carrier": "UPS",
+      "label": "UPS Next Day Air Saver",
+      "transit": "1 business day (afternoon)",
+      "baseFee": 55.0,
+      "perLb": 2.4,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "ups_next_day_air": {
+      "carrier": "UPS",
+      "label": "UPS Next Day Air",
+      "transit": "1 business day (morning)",
+      "baseFee": 68.0,
+      "perLb": 2.6,
+      "saturdayEligible": true,
+      "saturdayFee": 17.0,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "fedex_ground": {
+      "carrier": "FedEx",
+      "label": "FedEx Ground",
+      "transit": "1-5 business days",
+      "baseFee": 9.75,
+      "perLb": 0.85,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "fedex_express_saver": {
+      "carrier": "FedEx",
+      "label": "FedEx Express Saver",
+      "transit": "3 business days",
+      "baseFee": 19.0,
+      "perLb": 1.05,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "fedex_2day": {
+      "carrier": "FedEx",
+      "label": "FedEx 2Day",
+      "transit": "2 business days",
+      "baseFee": 27.0,
+      "perLb": 1.55,
+      "saturdayEligible": true,
+      "saturdayFee": 16.0,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "fedex_standard_overnight": {
+      "carrier": "FedEx",
+      "label": "FedEx Standard Overnight",
+      "transit": "1 business day (afternoon)",
+      "baseFee": 52.0,
+      "perLb": 2.3,
+      "saturdayEligible": false,
+      "saturdayFee": null,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    },
+    "fedex_priority_overnight": {
+      "carrier": "FedEx",
+      "label": "FedEx Priority Overnight",
+      "transit": "1 business day (morning)",
+      "baseFee": 62.0,
+      "perLb": 2.5,
+      "saturdayEligible": true,
+      "saturdayFee": 17.5,
+      "residentialEligible": true,
+      "maxWeightLb": 150
+    }
+  }
+}
