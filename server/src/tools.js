@@ -1,5 +1,5 @@
 // Tool definitions the chat model can call. Every function here is a thin
-// wrapper around the deterministic rulesEngine — the model never computes a
+// wrapper around the deterministic rulesEngine. The model never computes a
 // dollar amount itself, it only asks these tools for one and narrates it.
 
 import { buildQuote, compareServices, explainTerm, listServices, QuoteError } from "./rulesEngine.js";
@@ -27,7 +27,7 @@ export const toolDefinitions = [
   {
     name: "get_shipping_quote",
     description:
-      "Compute a full, itemized price quote for ONE specific carrier service (e.g. UPS Ground). Use this whenever the user gives you enough package details AND a specific service, or when you want to show the effect of one option (like adding Saturday delivery) in isolation. Always use this tool for any dollar figure you state — never estimate a price yourself.",
+      "Compute a full, itemized price quote for ONE specific carrier service (e.g. UPS Ground). Use this whenever the user gives you enough package details AND a specific service, or when you want to show the effect of one option (like adding Saturday delivery) in isolation. Always use this tool for any dollar figure you state; never estimate a price yourself.",
     input_schema: {
       type: "object",
       properties: { ...packageShape, serviceId: { type: "string", description: "Service id from list_services, e.g. 'ups_ground' or 'fedex_2day'." } },

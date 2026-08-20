@@ -1,16 +1,36 @@
 // Deterministic UPS/FedEx-style rate & rules engine.
 //
 // This is the ONE source of truth for every dollar amount the app shows. The
-// LLM chat layer never invents a price — it calls into these functions via
-// tool use and narrates the result. All figures are illustrative estimates
-// for a class-project prototype, not live carrier data. See data/*.json for
-// the underlying tables and their disclaimers.
+// LLM chat layer never invents a price; it calls into these functions via
+// tool use and narrates the result. Base freight rates and DAS ZIP lists in
+// data/serviceConfig.json and data/dasZips.json are the carriers' own real
+// published 2026 rate/zip files; accessorial fee amounts in
+// data/accessorials.json are informed estimates (not sourced from an
+// official document); zone estimation below is an approximation, not the
+// carriers' real per-origin zone charts. See each data file's own
+// "_comment" for exactly what is and isn't sourced from official data.
 
 import serviceConfig from "./data/serviceConfig.json" with { type: "json" };
 import accessorials from "./data/accessorials.json" with { type: "json" };
 import glossary from "./data/glossary.json" with { type: "json" };
+import dasZips from "./data/dasZips.json" with { type: "json" };
 
-const { services, zoneFactors, fuelSurchargePct } = serviceConfig;
+const { services, fuelSurchargePct } = serviceConfig;
+const MAX_TABLE_WEIGHT_LB = 150; // every service's rate table covers 1-150 lb whole-pound billing
+
+// Build carrier -> tier -> Set(zip5) once at module load for O(1) DAS lookups.
+const DAS_SETS = {
+  UPS: {
+    remote: new Set(dasZips.ups_remote48),
+    extended: new Set(dasZips.ups_extended),
+    standard: new Set(dasZips.ups_standard),
+  },
+  FedEx: {
+    remote: new Set(dasZips.fedex_remote),
+    extended: new Set(dasZips.fedex_extended),
+    standard: new Set(dasZips.fedex_standard),
+  },
+};
 
 export class QuoteError extends Error {}
 
@@ -26,11 +46,11 @@ function digitsOnly(zip) {
 /**
  * Approximate a UPS/FedEx-style shipping zone (2-8) from two US ZIP codes.
  * Real carrier zone charts are derived from the origin's ZIP3 against a
- * published zone chart with hundreds of rows. This model approximates that
- * with the leading digit of each ZIP (which corresponds to a broad USPS
- * "sectional center" region) and the numeric distance between them — close
- * enough to demonstrate zone-based pricing, not a substitute for the real
- * chart.
+ * published zone chart with hundreds of rows, one chart per possible origin.
+ * This model approximates that with the leading digit of each ZIP (which
+ * corresponds to a broad USPS "sectional center" region) and the numeric
+ * distance between them, close enough to demonstrate zone-based pricing, not
+ * a substitute for the real per-origin charts.
  */
 export function estimateZone(originZip, destZip) {
   const o = digitsOnly(originZip);
@@ -52,7 +72,15 @@ export function calcDimWeightLb(lengthIn, widthIn, heightIn) {
 }
 
 export function listServices() {
-  return Object.entries(services).map(([id, svc]) => ({ id, ...svc }));
+  return Object.entries(services).map(([id, svc]) => ({
+    id,
+    carrier: svc.carrier,
+    label: svc.label,
+    transit: svc.transit,
+    saturdayEligible: svc.saturdayEligible,
+    saturdayFee: svc.saturdayFee,
+    maxWeightLb: MAX_TABLE_WEIGHT_LB,
+  }));
 }
 
 function isPeakSeason(shipDateStr) {
@@ -70,12 +98,18 @@ function peakSurchargeFee(weightLb) {
   return 0;
 }
 
-function dasFeeForZip(destZip) {
-  const zip3 = digitsOnly(destZip).slice(0, 3);
-  if (accessorials.deliveryAreaSurcharge.extendedZip3.includes(zip3)) {
+/** Look up the real DAS/EDAS/remote tier for a carrier + destination ZIP. */
+function dasFeeForZip(carrier, destZip) {
+  const zip5 = digitsOnly(destZip).padStart(5, "0");
+  const sets = DAS_SETS[carrier];
+  if (!sets) return null;
+  if (sets.remote.has(zip5)) {
+    return { label: "Remote area delivery surcharge", fee: accessorials.deliveryAreaSurcharge.remoteFee };
+  }
+  if (sets.extended.has(zip5)) {
     return { label: "Extended delivery area surcharge (EDAS)", fee: accessorials.deliveryAreaSurcharge.extendedFee };
   }
-  if (accessorials.deliveryAreaSurcharge.standardZip3.includes(zip3)) {
+  if (sets.standard.has(zip5)) {
     return { label: "Delivery area surcharge (DAS)", fee: accessorials.deliveryAreaSurcharge.standardFee };
   }
   return null;
@@ -122,28 +156,33 @@ export function buildQuote(params) {
   if (!Number.isFinite(actualWeight) || actualWeight <= 0) {
     throw new QuoteError("weightLb must be a positive number.");
   }
-  if (actualWeight > svc.maxWeightLb) {
-    throw new QuoteError(
-      `${svc.label} does not support packages over ${svc.maxWeightLb} lb (this package is ${actualWeight} lb). Consider LTL freight instead.`,
-    );
-  }
 
   const zone = estimateZone(originZip, destZip);
   const dimWeight = calcDimWeightLb(lengthIn, widthIn, heightIn);
   const billableWeight = Math.max(actualWeight, dimWeight, 1);
+  // Carriers bill in whole-pound increments, rounding up.
+  const billableWeightRounded = Math.ceil(billableWeight);
+
+  if (billableWeightRounded > MAX_TABLE_WEIGHT_LB) {
+    throw new QuoteError(
+      `${svc.label} does not support packages over ${MAX_TABLE_WEIGHT_LB} lb billable weight (this package bills at ${billableWeightRounded} lb${dimWeight > actualWeight ? ", driven by dimensional weight" : ""}). Consider LTL freight instead.`,
+    );
+  }
 
   const lineItems = [];
 
-  // Base freight charge.
-  const zoneFactor = zoneFactors[String(zone)];
-  const baseFreight = round2(svc.baseFee + svc.perLb * billableWeight * zoneFactor);
-  lineItems.push({ code: "base_freight", label: `${svc.label} — base transportation charge`, amount: baseFreight });
+  // Base freight charge: real published rate table lookup by weight + zone.
+  const zoneIndex = zone - 2; // zones 2-8 map to array indices 0-6
+  const baseFreight = svc.rates[billableWeightRounded - 1][zoneIndex];
+  lineItems.push({ code: "base_freight", label: `${svc.label}: base transportation charge`, amount: baseFreight });
 
-  // Fuel surcharge, applied to base freight only.
-  const fuelFee = round2(baseFreight * fuelSurchargePct);
-  lineItems.push({ code: "fuel_surcharge", label: `Fuel surcharge (${(fuelSurchargePct * 100).toFixed(1)}%)`, amount: fuelFee });
+  // Fuel surcharge, applied to base freight only. Ground and air/expedited
+  // services carry different published fuel surcharge percentages.
+  const fuelPct = fuelSurchargePct[svc.fuelSurchargeType];
+  const fuelFee = round2(baseFreight * fuelPct);
+  lineItems.push({ code: "fuel_surcharge", label: `Fuel surcharge (${(fuelPct * 100).toFixed(2)}%)`, amount: fuelFee });
 
-  // Oversize / additional handling (mutually exclusive — oversize supersedes).
+  // Oversize / additional handling (mutually exclusive; oversize supersedes).
   const lengthPlusGirth = Number(lengthIn) + 2 * (Number(widthIn) + Number(heightIn));
   const isOversize = lengthPlusGirth > accessorials.oversize.lengthPlusGirthOverIn;
   const isAddlHandling =
@@ -163,7 +202,7 @@ export function buildQuote(params) {
     lineItems.push({ code: "additional_handling", label: "Additional handling charge", amount: accessorials.additionalHandling.fee });
   }
 
-  if (residential && svc.residentialEligible) {
+  if (residential) {
     lineItems.push({ code: "residential", label: "Residential delivery surcharge", amount: accessorials.residentialFee });
   }
 
@@ -180,7 +219,7 @@ export function buildQuote(params) {
     }
   }
 
-  const das = dasFeeForZip(destZip);
+  const das = dasFeeForZip(svc.carrier, destZip);
   if (das) {
     lineItems.push({ code: "delivery_area_surcharge", label: das.label, amount: das.fee });
   }
@@ -200,12 +239,12 @@ export function buildQuote(params) {
     zone,
     actualWeightLb: actualWeight,
     dimWeightLb: dimWeight,
-    billableWeightLb: billableWeight,
+    billableWeightLb: billableWeightRounded,
     lineItems,
     total,
     notes: [oversizeAdjustedBaseNote, saturdayNote].filter(Boolean),
     disclaimer:
-      "Illustrative estimate for demo purposes — not a live UPS/FedEx rate quote. Real pricing depends on your carrier account, current fuel index, and exact carrier rules.",
+      "Base rates and delivery-area-surcharge ZIPs are the carriers' own real published 2026 list rates/zip files, not your negotiated account rate. Other accessorial fee amounts, and the zone assigned to this ZIP pair, are estimates for demo purposes. See the business plan for details.",
   };
 }
 

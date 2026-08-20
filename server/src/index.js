@@ -97,6 +97,6 @@ app.post("/api/chat/reset", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Rate Buddy prototype running at http://localhost:${PORT}`);
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.log("  (ANTHROPIC_API_KEY not set — quote form will work, chat will not. See README.)");
+    console.log("  (ANTHROPIC_API_KEY not set: quote form will work, chat will not. See README.)");
   }
 });

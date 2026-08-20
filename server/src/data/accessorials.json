@@ -1,9 +1,9 @@
 {
-  "_comment": "Illustrative accessorial charge model for demo purposes. Real fee amounts and trigger thresholds vary by carrier, change roughly annually (each carrier publishes a General Rate Increase each January), and depend on the shipper's actual service agreement.",
-  "residentialFee": 5.35,
-  "signatureRequiredFee": 6.05,
+  "_comment": "Fee amounts below are informed estimates of 2025/2026-era published UPS/FedEx accessorial charges, not sourced from an official document (unlike serviceConfig.json's rate tables and dasZips.json's zip lists, which come directly from the carriers' own published files). Real fee amounts and trigger thresholds vary by carrier, change roughly annually (each carrier publishes a General Rate Increase each January), and depend on the shipper's actual service agreement.",
+  "residentialFee": 6.55,
+  "signatureRequiredFee": 6.7,
   "additionalHandling": {
-    "fee": 22.5,
+    "fee": 27.0,
     "triggers": {
       "longestSideOverIn": 48,
       "secondSideOverIn": 30,
@@ -11,7 +11,7 @@
     }
   },
   "oversize": {
-    "fee": 95.0,
+    "fee": 225.0,
     "billableWeightMinLb": 90,
     "lengthPlusGirthOverIn": 130
   },
@@ -23,20 +23,21 @@
     "windowStartMonthDay": "10-15",
     "windowEndMonthDay": "01-15",
     "tiers": [
-      { "maxWeightLb": 20, "fee": 1.15 },
-      { "maxWeightLb": 50, "fee": 3.75 },
-      { "maxWeightLb": null, "fee": 6.0 }
-    ]
+      { "maxWeightLb": 20, "fee": 1.35 },
+      { "maxWeightLb": 50, "fee": 4.65 },
+      { "maxWeightLb": null, "fee": 7.5 }
+    ],
+    "note": "Real carrier peak surcharges vary by specific calendar week and by whether the package also triggers additional handling/oversize; this model simplifies to one flat window and one set of weight tiers."
   },
   "deliveryAreaSurcharge": {
-    "standardFee": 3.35,
-    "extendedFee": 4.6,
-    "note": "DAS/EDAS applies to specific carrier-defined remote ZIP codes. This prototype flags a small illustrative sample of ZIP3 prefixes to demonstrate the feature — it is not an authoritative DAS zip list. A production version would sync the carrier's official DAS zip file.",
-    "standardZip3": ["599", "823", "824", "593", "970", "988", "045", "049"],
-    "extendedZip3": ["996", "997", "998", "999", "969"]
+    "standardFee": 5.05,
+    "extendedFee": 6.35,
+    "remoteFee": 15.0,
+    "note": "Three-tier DAS/EDAS model (standard, extended, and a third 'remote' tier for the contiguous 48 states) using each carrier's real 2026 published DAS ZIP list from dasZips.json. A ZIP in the remote tier is billed remoteFee instead of standardFee/extendedFee.",
+    "zipDataFile": "dasZips.json"
   },
   "addressCorrectionFee": {
     "fee": 18.0,
-    "note": "Billed by the carrier only if they correct an inaccurate address after pickup — not knowable pre-shipment, so it is never added to a quote. The assistant should proactively mention it when destination details look uncertain."
+    "note": "Billed by the carrier only if they correct an inaccurate address after pickup, which is not knowable pre-shipment, so it is never added to a quote. The assistant should proactively mention it when destination details look uncertain."
   }
 }

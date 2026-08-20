@@ -34,6 +34,26 @@ test("calcDimWeightLb: zero/missing dims returns 0 (no DIM impact)", () => {
   assert.equal(calcDimWeightLb(0, 0, 0), 0);
 });
 
+test("buildQuote: base freight matches the real published rate table (1 lb, zone 2, UPS Ground)", () => {
+  const quote = buildQuote({
+    originZip: "10001",
+    destZip: "10002", // same ZIP3 -> zone 2
+    weightLb: 1,
+    serviceId: "ups_ground",
+  });
+  const base = quote.lineItems.find((li) => li.code === "base_freight");
+  assert.equal(base.amount, 11.99); // 2026 published UPS Ground 1lb/zone2 list rate
+});
+
+test("buildQuote: ground and air services apply different fuel surcharge percentages", () => {
+  const ground = buildQuote({ originZip: "10001", destZip: "90210", weightLb: 5, serviceId: "ups_ground" });
+  const air = buildQuote({ originZip: "10001", destZip: "90210", weightLb: 5, serviceId: "ups_next_day_air" });
+  const groundFuel = ground.lineItems.find((li) => li.code === "fuel_surcharge");
+  const airFuel = air.lineItems.find((li) => li.code === "fuel_surcharge");
+  assert.ok(groundFuel.label.includes("16.75%"));
+  assert.ok(airFuel.label.includes("8.25%"));
+});
+
 test("buildQuote: billable weight uses the greater of actual vs DIM weight", () => {
   // Light but bulky box: 2 lb actual, dims force DIM weight much higher.
   const quote = buildQuote({
@@ -81,6 +101,23 @@ test("buildQuote: Saturday delivery on an ineligible service adds a note, not a 
   assert.ok(quote.notes.length > 0);
 });
 
+test("buildQuote: real DAS ZIP adds a delivery area surcharge, non-DAS ZIP does not", () => {
+  const dasQuote = buildQuote({
+    originZip: "90210",
+    destZip: "01002", // real standard-tier DAS zip for both carriers per 2026 data
+    weightLb: 5,
+    serviceId: "ups_ground",
+  });
+  const nonDasQuote = buildQuote({
+    originZip: "10001",
+    destZip: "90210", // not in any DAS tier
+    weightLb: 5,
+    serviceId: "ups_ground",
+  });
+  assert.ok(dasQuote.lineItems.some((li) => li.code === "delivery_area_surcharge"));
+  assert.ok(!nonDasQuote.lineItems.some((li) => li.code === "delivery_area_surcharge"));
+});
+
 test("buildQuote: rejects unknown service", () => {
   assert.throws(
     () => buildQuote({ originZip: "10001", destZip: "10002", weightLb: 1, serviceId: "dhl_teleport" }),
@@ -88,7 +125,7 @@ test("buildQuote: rejects unknown service", () => {
   );
 });
 
-test("buildQuote: rejects weight over service max", () => {
+test("buildQuote: rejects billable weight over the 150 lb table limit", () => {
   assert.throws(
     () => buildQuote({ originZip: "10001", destZip: "10002", weightLb: 999, serviceId: "ups_ground" }),
     QuoteError,

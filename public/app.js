@@ -8,7 +8,7 @@ async function loadServices() {
   for (const svc of services) {
     const opt = document.createElement("option");
     opt.value = svc.id;
-    opt.textContent = `${svc.carrier} — ${svc.label} (${svc.transit})`;
+    opt.textContent = `${svc.carrier}: ${svc.label} (${svc.transit})`;
     select.appendChild(opt);
   }
 }
@@ -40,7 +40,7 @@ function renderQuoteCard(quote, isCheapest) {
   const notes = quote.notes.map((n) => `<div class="note">⚠ ${n}</div>`).join("");
   return `
     <div class="quote-card ${isCheapest ? "cheapest" : ""}">
-      <h3>${quote.carrier} — ${quote.serviceLabel}</h3>
+      <h3>${quote.carrier}: ${quote.serviceLabel}</h3>
       <div class="meta">Transit: ${quote.transit} · Zone ${quote.zone} · Billable weight ${quote.billableWeightLb} lb${quote.dimWeightLb > quote.actualWeightLb ? ` (DIM weight applied, actual ${quote.actualWeightLb} lb)` : ""}</div>
       <div class="total">${money(quote.total)}</div>
       <table class="line-items">${rows}</table>

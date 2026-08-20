@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Rate Buddy — shipping quote & rules-explainer prototype backend.",
+  "description": "Rate Buddy: shipping quote & rules-explainer prototype backend.",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
