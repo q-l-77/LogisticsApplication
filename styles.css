@@ -1,0 +1,163 @@
+:root {
+  --ink: #1c2430;
+  --muted: #5b6673;
+  --line: #dde2e8;
+  --bg: #f5f7fa;
+  --panel: #ffffff;
+  --brand: #1e5f8a;
+  --brand-ink: #ffffff;
+  --accent: #2f7d5f;
+  --danger: #b3372c;
+  --radius: 10px;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.topbar {
+  background: var(--brand);
+  color: var(--brand-ink);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.brand { font-size: 1.3rem; font-weight: 700; }
+.tagline { opacity: 0.9; font-size: 0.95rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  max-width: 1100px;
+  margin: 1.5rem auto;
+  padding: 0 1.25rem;
+  align-items: start;
+}
+@media (max-width: 840px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem 1.5rem;
+}
+.panel h2 { margin-top: 0; font-size: 1.15rem; }
+.hint { color: var(--muted); font-size: 0.85rem; margin-top: -0.4rem; }
+
+form label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0.65rem 0 0.25rem;
+}
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: #fff;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+.grid-2 label, .grid-3 label { margin-top: 0; }
+
+.checks {
+  border: none;
+  padding: 0.4rem 0 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 0;
+}
+.checks input { width: auto; }
+
+button {
+  margin-top: 1rem;
+  background: var(--brand);
+  color: var(--brand-ink);
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.08); }
+button:disabled { opacity: 0.6; cursor: default; }
+
+.results { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.quote-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+}
+.quote-card.cheapest { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.quote-card h3 { margin: 0 0 0.15rem; font-size: 1rem; }
+.quote-card .meta { color: var(--muted); font-size: 0.8rem; margin-bottom: 0.5rem; }
+.quote-card .total { font-size: 1.25rem; font-weight: 700; }
+.line-items { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.85rem; }
+.line-items td { padding: 0.2rem 0; }
+.line-items td:last-child { text-align: right; white-space: nowrap; }
+.quote-card .note { color: var(--danger); font-size: 0.8rem; margin-top: 0.4rem; }
+.quote-card .disclaimer { color: var(--muted); font-size: 0.72rem; margin-top: 0.5rem; }
+.error-box { color: var(--danger); font-size: 0.9rem; }
+
+.chat-log {
+  margin-top: 1rem;
+  height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: #fafbfc;
+}
+.msg {
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-width: 88%;
+  white-space: pre-wrap;
+}
+.msg.assistant { background: #eef3f7; align-self: flex-start; }
+.msg.user { background: var(--brand); color: var(--brand-ink); align-self: flex-end; }
+.msg.error { background: #fbeceb; color: var(--danger); align-self: flex-start; }
+
+.chat-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.chat-form input { flex: 1; padding: 0.55rem 0.7rem; border: 1px solid var(--line); border-radius: 6px; }
+.chat-form button { margin-top: 0; }
+#chat-status { margin-top: 0.5rem; }
+
+.footer {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+  padding: 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.footer a { color: var(--brand); }
