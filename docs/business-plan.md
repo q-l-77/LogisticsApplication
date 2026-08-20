@@ -3,6 +3,7 @@
 **A shipping-cost literacy assistant for self-employed and small-business shippers**
 
 ---
+
 ## Foreword
 
 This project is inspired by my own experience working in supply chain logistics with carriers like UPS and FedEx. I saw firsthand that large companies have negotiated contracts and designated representative(s) to contact whenever a shipping question comes up. Self-employed individuals and small business owners have none of that. I understand how much of a hassle it is to read through a carrier's service guide, figure out which accessorial charges apply to a given package, and carefully compare services to find the most economical option, all without anyone to ask. That gap is what inspired me to build Rate Buddy: a shipping assistant built specifically for individual and small-scale shippers.
