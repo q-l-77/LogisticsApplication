@@ -1,0 +1,43 @@
+{
+  "_comment": "Fee amounts below are informed estimates of 2025/2026-era published UPS/FedEx accessorial charges, not sourced from an official document (unlike serviceConfig.json's rate tables and dasZips.json's zip lists, which come directly from the carriers' own published files). Real fee amounts and trigger thresholds vary by carrier, change roughly annually (each carrier publishes a General Rate Increase each January), and depend on the shipper's actual service agreement.",
+  "residentialFee": 6.55,
+  "signatureRequiredFee": 6.7,
+  "additionalHandling": {
+    "fee": 27.0,
+    "triggers": {
+      "longestSideOverIn": 48,
+      "secondSideOverIn": 30,
+      "weightOverLb": 50
+    }
+  },
+  "oversize": {
+    "fee": 225.0,
+    "billableWeightMinLb": 90,
+    "lengthPlusGirthOverIn": 130
+  },
+  "dimWeight": {
+    "divisor": 139,
+    "note": "Domestic DIM divisor of 139 in^3/lb, applied to all shipments regardless of size (industry standard since 2015 for UPS/FedEx). Billable weight is the greater of actual and dimensional weight."
+  },
+  "peakSeasonSurcharge": {
+    "windowStartMonthDay": "10-15",
+    "windowEndMonthDay": "01-15",
+    "tiers": [
+      { "maxWeightLb": 20, "fee": 1.35 },
+      { "maxWeightLb": 50, "fee": 4.65 },
+      { "maxWeightLb": null, "fee": 7.5 }
+    ],
+    "note": "Real carrier peak surcharges vary by specific calendar week and by whether the package also triggers additional handling/oversize; this model simplifies to one flat window and one set of weight tiers."
+  },
+  "deliveryAreaSurcharge": {
+    "standardFee": 5.05,
+    "extendedFee": 6.35,
+    "remoteFee": 15.0,
+    "note": "Three-tier DAS/EDAS model (standard, extended, and a third 'remote' tier for the contiguous 48 states) using each carrier's real 2026 published DAS ZIP list from dasZips.json. A ZIP in the remote tier is billed remoteFee instead of standardFee/extendedFee.",
+    "zipDataFile": "dasZips.json"
+  },
+  "addressCorrectionFee": {
+    "fee": 18.0,
+    "note": "Billed by the carrier only if they correct an inaccurate address after pickup, which is not knowable pre-shipment, so it is never added to a quote. The assistant should proactively mention it when destination details look uncertain."
+  }
+}
